@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/anime/:id",
+      "destination": "/anime/[id]/index.js"
+    },
+    {
+      "source": "/watch/:id",
+      "destination": "/watch/[id].js"
+    }
+  ]
+}
