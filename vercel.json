@@ -1,12 +1,15 @@
 {
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/anime/:id",
-      "destination": "/anime/[id]/index.js"
-    },
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
     {
-      "source": "/watch/:id",
-      "destination": "/watch/[id].js"
+      "src": "/(.*)",
+      "dest": "server.js"
     }
   ]
 }
