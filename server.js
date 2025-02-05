@@ -1,68 +1,67 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
-const port = process.env.PORT || 3000;
+const router = express.Router();
 
-// Set EJS as the view engine
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
-// Middleware untuk error handling
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).render('error', { message: 'Something went wrong!' });
-});
+// Error handling middleware (HARUS di akhir)
+const errorHandler = (err, req, res, next) => {
+  console.error('Error:', err.message);
+  res.status(500).render('error', { 
+    message: err.message || 'Terjadi kesalahan pada server' 
+  });
+};
 
-// Route untuk halaman utama
-app.get('/', async (req, res) => {
+// Route utama
+router.get('/', async (req, res, next) => {
   try {
-    const response = await axios.get('https://api.mutasikita.my.id/');
-    const animeList = response.data;
-    res.render('index', { animeList });
-  } catch (error) {
-    next(error);
+    const { data } = await axios.get('https://api.mutasikita.my.id/');
+    res.render('index', { animeList: data });
+  } catch (err) {
+    next(new Error('Gagal memuat data anime'));
   }
 });
 
-// Route untuk halaman detail anime
-app.get('/anime/:id', async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const response = await axios.get(`https://api.mutasikita.my.id/anime.php?id=${id}`);
-    const anime = response.data;
-    res.render('detail', { anime });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route untuk halaman streaming
-app.get('/watch/:id', async (req, res, next) => {
+// Route detail anime
+router.get('/anime/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const response = await axios.get(`https://api.mutasikita.my.id/video.php?id=${id}`);
-    const videoData = response.data;
-    res.render('watch', { videoData });
-  } catch (error) {
-    next(error);
+    const { data } = await axios.get(`https://api.mutasikita.my.id/anime.php?id=${id}`);
+    res.render('detail', { anime: data });
+  } catch (err) {
+    next(new Error('Anime tidak ditemukan'));
   }
 });
 
-// Route untuk pencarian
-app.get('/search', async (req, res, next) => {
+// Route streaming
+router.get('/watch/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { data } = await axios.get(`https://api.mutasikita.my.id/video.php?id=${id}`);
+    res.render('watch', { videoData: data });
+  } catch (err) {
+    next(new Error('Video tidak tersedia'));
+  }
+});
+
+// Route pencarian
+router.get('/search', async (req, res, next) => {
   try {
     const { q } = req.query;
-    const response = await axios.get('https://api.mutasikita.my.id/');
-    const animeList = response.data.filter(anime =>
+    const { data } = await axios.get('https://api.mutasikita.my.id/');
+    const filtered = data.filter(anime => 
       anime.title.toLowerCase().includes(q.toLowerCase())
     );
-    res.render('index', { animeList });
-  } catch (error) {
-    next(error);
+    res.render('index', { animeList: filtered });
+  } catch (err) {
+    next(new Error('Gagal melakukan pencarian'));
   }
 });
 
-// Jalankan server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+// Pasang router dan error handler
+app.use(router);
+app.use(errorHandler); // HARUS di akhir
+
+module.exports = app;
