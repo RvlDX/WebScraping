@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Streaming</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main>
+    <h1>Popular Anime</h1>
+    <form action="/search" method="GET" class="search-form">
+      <input type="text" name="q" placeholder="Search anime..." required>
+      <button type="submit">Search</button>
+    </form>
+
+    <div id="anime-list" class="anime-grid">
+      <% animeList.forEach(anime => { %>
+        <a href="/anime/<%= anime.id %>" class="anime-card">
+          <img src="<%= anime.thumbnail %>" alt="<%= anime.title %>">
+          <h3><%= anime.title %></h3>
+          <p><%= anime.genre %></p>
+        </a>
+      <% }) %>
+    </div>
+
+    <div id="loading" class="loading">Loading more anime...</div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/infiniteScroll.js"></script>
+</body>
+</html>
